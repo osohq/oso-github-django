@@ -1,37 +1,100 @@
 from django.db import models
 
-# Create your models here.
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
+from django.contrib.auth.models import AbstractUser
 from django.db.models.deletion import CASCADE
-from django_oso.models import AuthorizedModel
+from enum import Enum
+
+## ENUMERATIONS ##
+
+
+class RepositoryRoleChoices(Enum):
+    READ = "Read"
+    TRIAGE = "Triage"
+    WRITE = "Write"
+    MAINTAIN = "Maintain"
+    ADMIN = "Admin"
+
+
+class OrganizationRoleChoices(Enum):
+    MEMBER = "Member"
+    BILLING = "Billing Manager"
+    OWNER = "Owner"
+
+
+## MODELS ##
+
+
+class Organization(models.Model):
+    name = models.CharField(max_length=1024)
+    base_role = models.CharField(
+        max_length=256, choices=[(tag, tag.value) for tag in RepositoryRoleChoices]
+    )
 
 
 class User(AbstractUser):
+    # many-to-many relationship with organizations
+    organizations = models.ManyToManyField(Organization)
+
     # basic info
     email = models.CharField(max_length=256)
-    organizations = models.ManyToManyField("Organization")
 
 
-class Organization(AuthorizedModel):
-    name = models.CharField(max_length=1024)
-    members = models.ManyToManyField(User, through="OrganizationMember")
+class Team(models.Model):
+    # many-to-one relationship with organizations
+    organization = models.ForeignKey(Organization, CASCADE)
+
+    # many-to-one relationship with team maintainer
+    team_maintainer = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="maintainer_teams"
+    )
+
+    # many-to-many relationship with team members (Users)
+    users = models.ManyToManyField(User, related_name="member_teams")
 
 
-class Repository(AuthorizedModel):
-    # basic information
-    amount = models.IntegerField()
-    description = models.CharField(max_length=1024)
-
-    # ownership/category
-    owner = models.ForeignKey("User", CASCADE)
-    organization = models.ForeignKey("Organization", CASCADE)
+class Repository(models.Model):
+    # many-to-one relationship with organizations
+    organization = models.ForeignKey(Organization, CASCADE)
 
     # time info
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class Issue(models.Model):
+    # many-to-one relationship with repositories
+    repository = models.ForeignKey(Repository, CASCADE)
+
+
+## ROLE MODELS ##
+
+
+class RepositoryRole(models.Model):
+    # RepositoryRole name, selected from RepositoryRoleChoices
+    name = models.CharField(
+        max_length=256, choices=[(tag, tag.value) for tag in RepositoryRoleChoices]
+    )
+
+    # many-to-one relationship with organizations
+    # TODO: do we actually need the organization to be on the role?
+    organization = models.ForeignKey(Organization, CASCADE)
+
+    # many-to-one relationship with repositories
+    repository = models.ForeignKey(Repository, CASCADE)
+
+    # many-to-many relationship with users
+    users = models.ManyToManyField(User)
+
+    # many-to-many relationship with teams
+    teams = models.ManyToManyField(Team)
+
+
+class AdminRole(models.Model):
+    # Role name, selected from role choices
+    name = models.CharField(
+        max_length=256, choices=[(tag, tag.value) for tag in OrganizationRoleChoices]
+    )
+
+    # many-to-one relationship with organizations
+    # TODO: do we actually need the organization to be on the role?
+    organization = models.ForeignKey(Organization, CASCADE)

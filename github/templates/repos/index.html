@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Repositories" %}{% endblock %}
+
+{% block content %}
+
+<h2>Repositories Index</h2>
+
+{% if repo_list %}
+<div class="col-md-6">
+    <ul class="list-group">
+        {% for repo in repo_list %}
+        <a href="/repos/{{ repo.name }}/" class="list-group-item list-group-item-action">
+            <b>
+                {{ repo.owner }}/{{ repo.name }}
+            </b>
+        </a>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+<p>You don't have any repositories.</p>
+{% endif %}
+
+{% endblock %}
