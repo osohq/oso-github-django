@@ -1,0 +1,15 @@
+{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "View Team"
+%}{% endblock %} {% block content %}
+<h1>
+  <a href="{% url 'repos_index' team.organization %}"
+    >{{ team.organization }}</a
+  >
+  / {{ team.name }} Team
+</h1>
+<br />
+<h2>Members</h2>
+<ul class="list-group">
+  {% for user in members %}
+  <b>{{ user.username }}</b>
+</ul>
+{% endfor %} {% endblock %}

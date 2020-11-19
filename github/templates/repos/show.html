@@ -1,0 +1,24 @@
+{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "View
+Repository" %}{% endblock %} {% block content %}
+<h1>
+  <a href="{% url 'repos_index' org_name %}">{{ repo.organization }}</a>
+  / {{ repo.name }}
+</h1>
+
+<br />
+
+<h5>Commits: {{ commits }}</h5>
+<h5>Contributors: {{ contributors }}</h5>
+<h5>Last updated: {{ last_updated }}</h5>
+
+<br />
+
+<div>
+  <a href="{% url 'issues_index' org_name repo.name %}">
+    <h4 class="text-primary">
+      <b><pre>View Issues</pre></b>
+    </h4>
+  </a>
+</div>
+
+{% endblock %}

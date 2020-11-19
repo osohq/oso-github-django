@@ -1,0 +1,26 @@
+{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "Issues"
+%}{% endblock %} {% block content %}
+
+<h1>
+  <a href="{% url 'repos_index' org_name %}">{{ org_name }}</a> /
+  <a href="{% url 'repos_show' org_name repo_name %}">{{ repo_name }}</a>
+</h1>
+
+<h2>Issues</h2>
+
+{% if repo_list %}
+<div class="col-md-6">
+  <ul class="list-group">
+    {% for issue in issue_list %}
+    <a
+      href="/issues/{{ issue.name }}/"
+      class="list-group-item list-group-item-action"
+    >
+      <b> {{ issue.name }} </b>
+    </a>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<p>This repository doesn't have any issues.</p>
+{% endif %} {% endblock %}

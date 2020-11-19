@@ -30,16 +30,18 @@ class Organization(models.Model):
         max_length=256, choices=[(tag, tag.value) for tag in RepositoryRoleChoices]
     )
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class User(AbstractUser):
-    # many-to-many relationship with organizations
-    organizations = models.ManyToManyField(Organization)
-
     # basic info
     email = models.CharField(max_length=256)
 
 
 class Team(models.Model):
+    name = models.CharField(max_length=1024)
+
     # many-to-one relationship with organizations
     organization = models.ForeignKey(Organization, CASCADE)
 
@@ -53,6 +55,7 @@ class Team(models.Model):
 
 
 class Repository(models.Model):
+    name = models.CharField(max_length=1024)
     # many-to-one relationship with organizations
     organization = models.ForeignKey(Organization, CASCADE)
 
@@ -96,5 +99,7 @@ class AdminRole(models.Model):
     )
 
     # many-to-one relationship with organizations
-    # TODO: do we actually need the organization to be on the role?
     organization = models.ForeignKey(Organization, CASCADE)
+
+    # many-to-many relationship with users
+    users = models.ManyToManyField(User)

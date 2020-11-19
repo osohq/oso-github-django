@@ -1,0 +1,10 @@
+{% extends "base.html" %} {% load i18n %} {% block content %}
+
+<h2>{{ org_name }} Organization</h2>
+<br />
+<a href="{% url 'repos_index' org_name %}"> Repositories </a>
+<a href="{% url 'teams_index' org_name %}"> Teams </a>
+<br />
+<br />
+
+{% block org_content %} {% endblock %} {% endblock %}

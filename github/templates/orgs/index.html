@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Home" %}{% endblock %}
+
+{% block content %}
+  {% if org_list|length != 0 %}
+    <p>
+        <b>Organizations:</b>
+        <ul class="list-group">
+            {% for org in org_list %}
+            <a href="{% url 'repos_index' org.name %}" class="list-group-item list-group-item-action">
+                <b>
+                    {{ org.name }}
+                </b>
+            </a>
+            {% endfor %}
+        </ul>
+    </p>
+  {% endif %}
+
+  {% if org_list|length != 0 %}
+    <br>
+    <hr>
+    <br>
+  {% else %}
+    <p>You don't have any organizations.</p>
+  {% endif %}
+
+{% endblock %}
