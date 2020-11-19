@@ -1,0 +1,128 @@
+[
+{
+    "model": "github.user",
+    "pk": 1,
+    "fields": {
+        "password": "pbkdf2_sha256$216000$98Yn7K2aIxdf$5o5R9JDGs7PYdZniTs5JOM/eT5mlMSqgBbfwBBVIL0o=",
+        "last_login": "2020-11-19T00:05:08.311Z",
+        "is_superuser": false,
+        "username": "john",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-11-18T21:42:11.699Z",
+        "email": "john@beatles.com",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "github.user",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$216000$RtzTLXvBGasz$vojOcef5mRqfqb8PCeQG320R474wpnDcPQHumrtHMQY=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "paul",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-11-18T21:42:11.701Z",
+        "email": "paul@beatles.com",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "github.user",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$216000$6RhyDvoR2yWQ$KNThO9Ri6h4pKkPc56x5CsKRVUVzNhD7zf9bzOxvegQ=",
+        "last_login": "2020-11-19T03:09:00.857Z",
+        "is_superuser": true,
+        "username": "admin",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2020-11-18T18:13:12.383Z",
+        "email": "admin@admin.com",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "github.user",
+    "pk": 4,
+    "fields": {
+        "password": "pbkdf2_sha256$216000$Vp7K9WlOS1L6$MeLKoCmtgwOJCzT+bcJQX4TXMMdC5gxUFBYNEioKB+E=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "mike",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-11-19T03:09:56Z",
+        "email": "mike@monsters.com",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "github.user",
+    "pk": 5,
+    "fields": {
+        "password": "pbkdf2_sha256$216000$NLmmKek63IvA$q9gHs4409znfK7RY8p/heA9CUshx0zvfrH6W1FmMrWI=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "sully",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-11-19T03:10:23Z",
+        "email": "sully@monsters.com",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "github.user",
+    "pk": 6,
+    "fields": {
+        "password": "pbkdf2_sha256$216000$rTflHUU4PulK$5C9MDNxSWpmbqmQuRIm/U4sLkivt9HecyUF7d01CjtI=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "ringo",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-11-19T03:11:39Z",
+        "email": "ringo@beatles.com",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "github.user",
+    "pk": 7,
+    "fields": {
+        "password": "pbkdf2_sha256$216000$6BVplXEjItBu$+7Ap0bWrBtgYW8ilgv8SzFPcokA7t4ymEyHytLpaMPY=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "randall",
+        "first_name": "",
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-11-19T03:16:15Z",
+        "email": "randall@monsters.com",
+        "groups": [],
+        "user_permissions": []
+    }
+}
+]

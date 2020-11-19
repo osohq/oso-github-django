@@ -1,0 +1,47 @@
+[
+{
+    "model": "github.organizationrole",
+    "pk": 1,
+    "fields": {
+        "name": "O",
+        "organization": 1,
+        "users": [
+            1
+        ]
+    }
+},
+{
+    "model": "github.organizationrole",
+    "pk": 2,
+    "fields": {
+        "name": "M",
+        "organization": 1,
+        "users": [
+            2
+        ]
+    }
+},
+{
+    "model": "github.organizationrole",
+    "pk": 3,
+    "fields": {
+        "name": "M",
+        "organization": 2,
+        "users": [
+            5,
+            7
+        ]
+    }
+},
+{
+    "model": "github.organizationrole",
+    "pk": 4,
+    "fields": {
+        "name": "O",
+        "organization": 2,
+        "users": [
+            4
+        ]
+    }
+}
+]

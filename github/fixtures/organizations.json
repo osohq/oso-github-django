@@ -1,0 +1,18 @@
+[
+{
+    "model": "github.organization",
+    "pk": 1,
+    "fields": {
+        "name": "The Beatles",
+        "base_role": "R"
+    }
+},
+{
+    "model": "github.organization",
+    "pk": 2,
+    "fields": {
+        "name": "Monsters Inc.",
+        "base_role": "R"
+    }
+}
+]

@@ -1,0 +1,18 @@
+[
+{
+    "model": "github.repositoryrole",
+    "pk": 1,
+    "fields": {
+        "name": "R",
+        "organization": 1,
+        "repository": 1,
+        "users": [
+            1,
+            2
+        ],
+        "teams": [
+            1
+        ]
+    }
+}
+]
