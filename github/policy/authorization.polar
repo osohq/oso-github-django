@@ -52,7 +52,7 @@ user_in_role(user: github::User, role, team: github::Team) if
 
 ### Get user's teams
 get_user_teams(user: github::User, team) if
-    team in github::Team.objects.filter(teamrole__users__in=user);
+    team in github::Team.objects.filter(teamrole__users__in: user);
 
 ## Repository Roles
 
@@ -68,7 +68,7 @@ team_in_role(team: github::Team, role, repo: github::Repository) if
 ### User role source: organization base role
 user_in_role(user: github::User, role, repo: github::Repository) if
     user_in_org(user, repo.organization) and
-    role = new RepositoryRole(name: org.base_role, repository: repo);
+    role = new github::RepositoryRole(name: repo.organization.base_role, repository: repo);
 
 ### User role source: team role
 user_in_role(user: github::User, role, repo: github::Repository) if
@@ -78,11 +78,17 @@ user_in_role(user: github::User, role, repo: github::Repository) if
 
 # ROLE-PERMISSION RELATIONSHIPS
 
+## Organization Permissions
+
+### All organization roles let users read organizations
+role_allow(_role: github::OrganizationRole{organization: org}, "read", org: github::Organization);
+
 ## Repository Permissions
 
 ### TODO: map these to HTTP requests?
 ### Read role can read repositories
-role_allow(role: RepositoryRole{name: "Read", repository: repo}, "read", repo: github::Repository);
+role_allow(_role: github::RepositoryRole{name: "Read", repository: repo}, "read", repo: github::Repository);
+role_allow(_role: github::RepositoryRole{name: "Read", repository: repo}, "read", repo: github::Issue);
 
 
 # ROLE-ROLE RELATIONSHIPS
@@ -138,3 +144,20 @@ inherits_team_role("Maintainer", "Member");
 # - `user_in_role` is only being used to get roles, and won't work properly to check roles, since
 #    roles are django models, not Strings. Should we explicitly name them `get_user_role`?
 #   - related: would be helpfult to mark an unbound variable with a specializer
+#
+# - Something we might be missing:
+#   - a standard way to map the resources that role types apply to
+#   - e.g., RepositoryRole applies to
+
+
+
+# A resource's roles apply to itself
+resource_role_applies(role_resource, role_resource);
+
+# A repository's roles apply to its child issues
+resource_role_applies_to(role_resource, requested_resource) if
+    requested_resource.repository = role_resource;
+
+# An organization's roles apply to its child repositories
+resource_role_applies_to(role_resource: github::Organization, requested_resource: github::Repository) if
+    requested_resource.organization = role_resource;
