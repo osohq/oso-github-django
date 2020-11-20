@@ -7,17 +7,22 @@ from django.db.models.deletion import CASCADE
 
 
 class RepositoryRoleLevel(models.TextChoices):
-    READ = "R"
-    TRIAGE = "T"
-    WRITE = "W"
-    MAINTAIN = "M"
-    ADMIN = "A"
+    READ = "Read"
+    TRIAGE = "Triage"
+    WRITE = "Write"
+    MAINTAIN = "Maintain"
+    ADMIN = "Admin"
 
 
 class OrganizationRoleLevel(models.TextChoices):
-    MEMBER = "M"
-    BILLING_MANAGER = "B"
-    OWNER = "O"
+    MEMBER = "Member"
+    BILLING_MANAGER = "Billing"
+    OWNER = "Owner"
+
+
+class TeamRoleLevel(models.TextChoices):
+    MEMBER = "Member"
+    MAINTAINER = "Maintainer"
 
 
 ## MODELS ##
@@ -86,10 +91,6 @@ class Issue(models.Model):
 class RepositoryRole(models.Model):
     # RepositoryRole name, selected from RepositoryRoleChoices
     name = models.CharField(max_length=256, choices=RepositoryRoleLevel.choices)
-
-    # many-to-one relationship with organizations
-    # TODO: do we actually need the organization to be on the role?
-    organization = models.ForeignKey(Organization, CASCADE)
 
     # many-to-one relationship with repositories
     repository = models.ForeignKey(Repository, CASCADE)
