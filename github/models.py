@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.deletion import CASCADE
 
+from django_oso.models import AuthorizedModel
+
 ## ENUMERATIONS ##
 
 
@@ -28,7 +30,7 @@ class TeamRoleLevel(models.TextChoices):
 ## MODELS ##
 
 
-class Organization(models.Model):
+class Organization(AuthorizedModel):
     name = models.CharField(max_length=1024)
     base_role = models.CharField(
         max_length=256,
@@ -47,7 +49,7 @@ class User(AbstractUser):
     organizations = models.ManyToManyField(Organization)
 
 
-class Team(models.Model):
+class Team(AuthorizedModel):
     name = models.CharField(max_length=1024)
 
     # many-to-one relationship with organizations
@@ -57,7 +59,7 @@ class Team(models.Model):
         return f"{self.name}"
 
 
-class Repository(models.Model):
+class Repository(AuthorizedModel):
     name = models.CharField(max_length=1024)
     # many-to-one relationship with organizations
     organization = models.ForeignKey(Organization, CASCADE)
@@ -70,7 +72,7 @@ class Repository(models.Model):
         return f"{self.name}"
 
 
-class Issue(models.Model):
+class Issue(AuthorizedModel):
     name = models.CharField(max_length=1024)
     # many-to-one relationship with repositories
     repository = models.ForeignKey(Repository, CASCADE)
@@ -82,7 +84,7 @@ class Issue(models.Model):
 ## ROLE MODELS ##
 
 
-class RepositoryRole(models.Model):
+class RepositoryRole(AuthorizedModel):
     # RepositoryRole name, selected from RepositoryRoleChoices
     name = models.CharField(max_length=256, choices=RepositoryRoleLevel.choices)
 
@@ -99,7 +101,7 @@ class RepositoryRole(models.Model):
         return f"{RepositoryRoleLevel(self.name).label} on {self.repository}"
 
 
-class OrganizationRole(models.Model):
+class OrganizationRole(AuthorizedModel):
     # Role name, selected from role choices
     name = models.CharField(max_length=256, choices=OrganizationRoleLevel.choices)
 
@@ -113,7 +115,7 @@ class OrganizationRole(models.Model):
         return f"{OrganizationRoleLevel(self.name).label} of {self.organization}"
 
 
-class TeamRole(models.Model):
+class TeamRole(AuthorizedModel):
     # Role name, selected from role choices
     name = models.CharField(max_length=256, choices=TeamRoleLevel.choices)
 

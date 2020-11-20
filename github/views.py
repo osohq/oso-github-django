@@ -5,7 +5,9 @@ from django.views.generic import View
 from django.utils.timezone import localtime, now
 from datetime import datetime, timedelta
 
-from github.models import User, Repository, Issue, Organization, Team
+from django_oso.auth import authorize, authorize_model
+
+from github.models import User, Repository, Issue, Organization, Team, RepositoryRole
 
 DANGER = 50
 
@@ -17,7 +19,9 @@ def index(request):
 @login_required
 def orgs_index(request):
     if request.method == "GET":
-        context = {"org_list": Organization.objects.all()}
+        org_filter = authorize_model(request, Organization, action="read")
+        orgs = Organization.objects.filter(org_filter)
+        context = {"org_list": orgs}
         return render(request, "orgs/index.html", context)
     # if request.method == "POST":
     #     if "delete_mapping" in request.POST:
@@ -35,7 +39,8 @@ def orgs_index(request):
 @login_required
 def repos_index(request, org_name):
     if request.method == "GET":
-        repos = Repository.objects.filter(organization__name=org_name)
+        repo_filter = authorize_model(request, Repository, action="read")
+        repos = Repository.objects.filter(repo_filter)
         context = {"org_name": org_name, "repo_list": repos}
         return render(request, "repos/index.html", context)
     if request.method == "POST":
@@ -80,7 +85,11 @@ def teams_index(request, org_name):
 
 def teams_show(request, org_name, team_name):
     team = get_object_or_404(Team, organization__name=org_name, name=team_name)
-    context = {"team": team, "members": team.users.all()}
+    context = {
+        "team": team,
+        "members": User.objects.filter(teamrole__team=team),
+        "roles": RepositoryRole.objects.filter(teams=team),
+    }
     return render(request, "teams/show.html", context)
 
 

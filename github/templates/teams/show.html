@@ -11,5 +11,16 @@
 <ul class="list-group">
   {% for user in members %}
   <b>{{ user.username }}</b>
+  {% endfor %}
 </ul>
-{% endfor %} {% endblock %}
+<br />
+<h2>Repositories</h2>
+{% if roles %}
+<ul class="list-group">
+  {% for role in roles %}
+  <b>{{ role.name }} on {{ role.repository }}</b>
+  {% endfor %}
+</ul>
+{% else %}
+<p>This team does not have access to any repositories.</p>
+{% endif %} {% endblock %}
