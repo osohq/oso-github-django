@@ -3,7 +3,7 @@
     "model": "github.organizationrole",
     "pk": 1,
     "fields": {
-        "name": "O",
+        "name": "Owner",
         "organization": 1,
         "users": [
             1
@@ -14,7 +14,7 @@
     "model": "github.organizationrole",
     "pk": 2,
     "fields": {
-        "name": "M",
+        "name": "Member",
         "organization": 1,
         "users": [
             2
@@ -25,7 +25,7 @@
     "model": "github.organizationrole",
     "pk": 3,
     "fields": {
-        "name": "M",
+        "name": "Member",
         "organization": 2,
         "users": [
             5,
@@ -37,7 +37,7 @@
     "model": "github.organizationrole",
     "pk": 4,
     "fields": {
-        "name": "O",
+        "name": "Owner",
         "organization": 2,
         "users": [
             4

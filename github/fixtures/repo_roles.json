@@ -3,8 +3,7 @@
     "model": "github.repositoryrole",
     "pk": 1,
     "fields": {
-        "name": "R",
-        "organization": 1,
+        "name": "Read",
         "repository": 1,
         "users": [
             1,
