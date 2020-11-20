@@ -44,20 +44,14 @@ class User(AbstractUser):
     # basic info
     email = models.CharField(max_length=256)
 
+    organizations = models.ManyToManyField(Organization)
+
 
 class Team(models.Model):
     name = models.CharField(max_length=1024)
 
     # many-to-one relationship with organizations
     organization = models.ForeignKey(Organization, CASCADE)
-
-    # many-to-one relationship with team maintainer
-    team_maintainer = models.ForeignKey(
-        User, on_delete=models.RESTRICT, related_name="maintainer_teams"
-    )
-
-    # many-to-many relationship with team members (Users)
-    users = models.ManyToManyField(User, related_name="member_teams")
 
     def __str__(self):
         return f"{self.name}"
@@ -117,3 +111,14 @@ class OrganizationRole(models.Model):
 
     def __str__(self):
         return f"{OrganizationRoleLevel(self.name).label} of {self.organization}"
+
+
+class TeamRole(models.Model):
+    # Role name, selected from role choices
+    name = models.CharField(max_length=256, choices=TeamRoleLevel.choices)
+
+    # many-to-one relationship with teams
+    team = models.ForeignKey(Team, CASCADE)
+
+    # many-to-many relationship with users
+    users = models.ManyToManyField(User, blank=True)

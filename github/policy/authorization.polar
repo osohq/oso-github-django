@@ -1,5 +1,6 @@
 
-# enable rbac
+# RBAC BASE POLICY
+
 allow(user: github::User, action: String, resource) if
     rbac_allow(user, action, resource);
 
@@ -9,7 +10,7 @@ rbac_allow(user: github::User, action: String, resource) if
     role_allow(role, action, resource);
 
 # rbac allow to let Repository roles have permissions on their child Issues
-# TODO: improve
+# TODO: improve, maybe this looks like a mixin for nested resources, with abstract `parent` fields
 rbac_allow(user: github::User, action: String, issue: github::Issue) if
     user_in_role(user, role, issue.repository) and
     role_allow(role, action, issue);
@@ -24,7 +25,7 @@ rbac_allow(user: github::User, action: String, repo: github::Repository) if
 
 ## Organization Roles
 
-### OrganizationRole source: direct mapping between users and organization roles
+### User role source: direct mapping between users and organization roles
 user_in_role(user: github::User, role, org: github::Organization) if
     # role is an OrganizationRole object
     role in github::OrganizationRole.objects.filter(users: user, organization: org);
@@ -43,7 +44,7 @@ user_in_org(user: github::User, org: github::Organization) if
 
 ## Team Roles
 
-### TeamRole source: direct mapping between users and team roles
+### User role source: direct mapping between users and team roles
 user_in_role(user: github::User, role, team: github::Team) if
     role in github::TeamRole.objects.filter(users: user, team: team);
 
@@ -51,7 +52,7 @@ user_in_role(user: github::User, role, team: github::Team) if
 
 ### Get user's teams
 get_user_teams(user: github::User, team) if
-    team in github::Team.objects.filter(teamrole__users=user);
+    team in github::Team.objects.filter(teamrole__users__in=user);
 
 ## Repository Roles
 
@@ -71,25 +72,56 @@ user_in_role(user: github::User, role, repo: github::Repository) if
 
 ### User role source: team role
 user_in_role(user: github::User, role, repo: github::Repository) if
-    user_in_team
+    get_user_teams(user, team) and
     team_in_role(team, role, repo);
 
 
+# ROLE-PERMISSION RELATIONSHIPS
+
+## Repository Permissions
+
+### TODO: map these to HTTP requests?
+### Read role can read repositories
+role_allow(role: RepositoryRole{name: "Read", repository: repo}, "read", repo: github::Repository);
 
 
+# ROLE-ROLE RELATIONSHIPS
 
-# it seems weird that the association between the role and the repository is happening
-# in the `user_in_role` rule, rather than here. Feels like there should be some connection
-# between the role and the resource in this rule.
-role_allow(RepositoryRole{name: "R", repository: repo}, "read", repo: github::Repository);
+## Role Hierarchies
 
-# this is more clear, as an alternative to the `role_allow` structure.
-# eliding `role_allow` might make more sense for resource-specific roles.
-allow(user: github::User, "read", repo: github::Repository) if
-    user_in_role(user, "R", repo);
+### Grant a role permissions that it inherits from a more junior role
+role_allow(role, action, resource) if
+    inherits_role(role, inherited_role) and
+    role_allow(inherited_role, action, resource);
 
-allow(user: github::User, "view", repo: github::Repo) if
-    user.permission
+### Role inheritance for repository roles
+inherits_role(role: github::RepositoryRole, inherited_role) if
+    inherits_repository_role(role.name, inherited_role_name) and
+    inherited_role = new github::RepositoryRole(name: inherited_role_name, repository: role.repository);
+
+# TODO: this doesn't feel like the ideal way to express this hierarchy, quite redundant
+inherits_repository_role("Admin", "Maintain");
+inherits_repository_role("Maintain", "Write");
+inherits_repository_role("Write", "Triage");
+inherits_repository_role("Triage", "Read");
+
+
+### Role inheritance for organization roles
+inherits_role(role: github::OrganizationRole, inherited_role) if
+    inherits_org_role(role.name, inherited_role_name) and
+    inherited_role = new github::OrganizationRole(name: inherited_role_name, organization: role.organization);
+
+inherits_org_role("Owner", "Member");
+inherits_org_role("Owner", "Billing");
+
+### Role inheritance for team roles
+inherits_role(role: github::TeamRole, inherited_role) if
+    inherits_team_role(role.name, inherited_role_name) and
+    inherited_role = new github::TeamRole(name: inherited_role_name, team: role.team);
+
+inherits_team_role("Maintainer", "Member");
+
+
 
 
 ######## NOTES ###########
@@ -102,3 +134,7 @@ allow(user: github::User, "view", repo: github::Repo) if
 # - resource groups OR tenants (e.g. organizations)
 #   - are tenants only relevant as resource groups? E.g. an organization groups repositories?
 #   - are resource groups just resources with nested resources inside them?
+#
+# - `user_in_role` is only being used to get roles, and won't work properly to check roles, since
+#    roles are django models, not Strings. Should we explicitly name them `get_user_role`?
+#   - related: would be helpfult to mark an unbound variable with a specializer

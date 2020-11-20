@@ -4,12 +4,7 @@
     "pk": 1,
     "fields": {
         "name": "Vocalists",
-        "organization": 1,
-        "team_maintainer": 1,
-        "users": [
-            1,
-            2
-        ]
+        "organization": 1
     }
 },
 {
@@ -17,11 +12,7 @@
     "pk": 2,
     "fields": {
         "name": "Percussion",
-        "organization": 1,
-        "team_maintainer": 6,
-        "users": [
-            6
-        ]
+        "organization": 1
     }
 },
 {
@@ -29,12 +20,7 @@
     "pk": 3,
     "fields": {
         "name": "Scarers",
-        "organization": 2,
-        "team_maintainer": 5,
-        "users": [
-            5,
-            7
-        ]
+        "organization": 2
     }
 }
 ]
