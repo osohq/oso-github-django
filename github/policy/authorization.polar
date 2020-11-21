@@ -119,45 +119,46 @@ role_allow(role: github::RepositoryRole{name: "Read"}, "read", issue: github::Is
 
 ### Hack around organization base roles (ignoring the role basically makes this a normal allow rule)
 ### TODO: figure out better way to implement this
-role_allow(_, "read", repo: github::Repository) if
+role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github::Repository) if
+    role.organization = repo.organization and
     repo.organization.base_role = "Read";
 
 
-# # ROLE-ROLE RELATIONSHIPS
+# ROLE-ROLE RELATIONSHIPS
 
-# ## Role Hierarchies
+## Role Hierarchies
 
-# ### Grant a role permissions that it inherits from a more junior role
-# role_allow(role, action, resource) if
-#     inherits_role(role, inherited_role) and
-#     role_allow(inherited_role, action, resource);
+### Grant a role permissions that it inherits from a more junior role
+role_allow(role, action, resource) if
+    inherits_role(role, inherited_role) and
+    role_allow(inherited_role, action, resource);
 
-# ### Role inheritance for repository roles
-# inherits_role(role: github::RepositoryRole, inherited_role) if
-#     inherits_repository_role(role.name, inherited_role_name) and
-#     inherited_role = new github::RepositoryRole(name: inherited_role_name, repository: role.repository);
+### Role inheritance for repository roles
+inherits_role(role: github::RepositoryRole, inherited_role) if
+    inherits_repository_role(role.name, inherited_role_name) and
+    inherited_role = new github::RepositoryRole(name: inherited_role_name, repository: role.repository);
 
-# # TODO: this doesn't feel like the ideal way to express this hierarchy, quite redundant
-# inherits_repository_role("Admin", "Maintain");
-# inherits_repository_role("Maintain", "Write");
-# inherits_repository_role("Write", "Triage");
-# inherits_repository_role("Triage", "Read");
+# TODO: this doesn't feel like the ideal way to express this hierarchy, quite redundant
+inherits_repository_role("Admin", "Maintain");
+inherits_repository_role("Maintain", "Write");
+inherits_repository_role("Write", "Triage");
+inherits_repository_role("Triage", "Read");
 
 
-# ### Role inheritance for organization roles
-# inherits_role(role: github::OrganizationRole, inherited_role) if
-#     inherits_org_role(role.name, inherited_role_name) and
-#     inherited_role = new github::OrganizationRole(name: inherited_role_name, organization: role.organization);
+### Role inheritance for organization roles
+inherits_role(role: github::OrganizationRole, inherited_role) if
+    inherits_org_role(role.name, inherited_role_name) and
+    inherited_role = new github::OrganizationRole(name: inherited_role_name, organization: role.organization);
 
-# inherits_org_role("Owner", "Member");
-# inherits_org_role("Owner", "Billing");
+inherits_org_role("Owner", "Member");
+inherits_org_role("Owner", "Billing");
 
-# ### Role inheritance for team roles
-# inherits_role(role: github::TeamRole, inherited_role) if
-#     inherits_team_role(role.name, inherited_role_name) and
-#     inherited_role = new github::TeamRole(name: inherited_role_name, team: role.team);
+### Role inheritance for team roles
+inherits_role(role: github::TeamRole, inherited_role) if
+    inherits_team_role(role.name, inherited_role_name) and
+    inherited_role = new github::TeamRole(name: inherited_role_name, team: role.team);
 
-# inherits_team_role("Maintainer", "Member");
+inherits_team_role("Maintainer", "Member");
 
 
 
