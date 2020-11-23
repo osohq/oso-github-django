@@ -9,6 +9,7 @@ from .views import (
     orgs_index,
     teams_index,
     teams_show,
+    org_people_index,
 )
 
 
@@ -28,5 +29,5 @@ urlpatterns = [
     ),
     path("orgs/<org_name>/teams/", teams_index, name="teams_index"),
     path("orgs/<org_name>/teams/<team_name>", teams_show, name="teams_show"),
-    # path("orgs/people/", people_index, name="people_index"),
+    path("orgs/<org_name>/people/", org_people_index, name="org_people_index"),
 ]

@@ -29,6 +29,24 @@ rbac_allow(user: github::User, action: String, repo: github::Repository) if
     user_in_role(user, role, repo_org) and
     role_allow(role, action, repo);
 
+### rbac allow to let Organization roles have permissions on their child Teams
+### TODO: improve
+rbac_allow(user: github::User, action: String, team: github::Team) if
+    team_org = team.organization and
+    team_org matches github::Organization and
+    user_in_role(user, role, team_org) and
+    role_allow(role, action, team);
+
+### rbac allow to let Organization roles have permissions on HttpRequests that match the "/orgs/" route
+### TODO: is this the right way to handle these pages? Would it be better to do this as "model-based access" and
+### pass in a class for the actual resource being accessed instead?
+rbac_allow(user: github::User, action, request: HttpRequest) if
+    request.path.split("/") matches ["", "orgs", org_name, *rest] and
+    org = github::Organization.objects.get(name: org_name) and
+    user_in_role(user, role, org) and
+    role_allow(role, action, request);
+
+
 # USER-ROLE RELATIONSHIPS
 
 ## Organization Roles
@@ -107,6 +125,13 @@ role_allow(role: github::OrganizationRole, "read", org: github::Organization) if
     # This is a good use case for the `allow iff` syntax.
     role.organization.id = org.id;
 
+### Organization owners can access the "People" org page
+role_allow(role: github::OrganizationRole{name: "Owner"}, "GET", request: HttpRequest) if
+    request.path.split("/") matches ["", "orgs", org_name, "people", *rest] and
+    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
+    role.organization.name = org_name;
+
+
 ## Repository Permissions
 
 ### TODO: map these to HTTP requests?
@@ -124,6 +149,14 @@ role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github:
     role.organization = repo.organization and
     repo.organization.base_role = "Read";
 
+## Team Permissions
+
+### Organization owners can view all teams in the org
+role_allow(role: github::OrganizationRole{name: "Owner"}, "read", team: github::Team) if
+    role.organization = team.organization;
+
+role_allow(role: github::TeamRole{name: "Member"}, "read", team: github::Team) if
+    role.team = team;
 
 # ROLE-ROLE RELATIONSHIPS
 

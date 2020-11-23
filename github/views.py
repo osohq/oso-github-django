@@ -1,19 +1,34 @@
+from django.db.models import F
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import View
 from django.utils.timezone import localtime, now
+from django.http import HttpRequest
 from datetime import datetime, timedelta
 
 from django_oso.auth import authorize, authorize_model
+from django_oso.decorators import authorize_request
+from django_oso import Oso
 
-from github.models import User, Repository, Issue, Organization, Team, RepositoryRole
+from github.models import (
+    User,
+    Repository,
+    Issue,
+    Organization,
+    Team,
+    RepositoryRole,
+    OrganizationRole,
+)
 
 DANGER = 50
 
 # Create your views here.
 def index(request):
     return redirect("orgs_index")
+
+
+# ORGANIZATION VIEWS
 
 
 @login_required
@@ -34,6 +49,27 @@ def orgs_index(request):
     #     else:
     #         logger.warn(request.POST)
     # return render(request, "orgs/show.html", {"org": org})
+
+
+@authorize_request
+def org_people_index(request, org_name):
+    if request.method == "GET":
+        roles = OrganizationRole.objects.filter(
+            organization__name=org_name
+        ).prefetch_related("users")
+        user_roles = []
+        for role in roles:
+            for user in role.users.all():
+                user_roles.append((user.username, role.name))
+
+        return render(
+            request,
+            "orgs/people.html",
+            context={"org_name": org_name, "user_roles": user_roles},
+        )
+
+
+# REPOSITORY VIEWS
 
 
 @login_required
@@ -60,10 +96,32 @@ def repos_index(request, org_name):
             return redirect("/repos/")
 
 
+def repos_show(request, org_name, repo_name):
+    repo = get_object_or_404(Repository, organization__name=org_name, name=repo_name)
+    contributors = len(repo.name)
+    commits = contributors * 17
+    last_updated = localtime(now()) - timedelta(hours=commits, minutes=contributors)
+    return render(
+        request,
+        "repos/show.html",
+        {
+            "org_name": org_name,
+            "repo": repo,
+            "commits": commits,
+            "contributors": contributors,
+            "last_updated": last_updated,
+        },
+    )
+
+
+# TEAM VIEWS
+
+
 @login_required
 def teams_index(request, org_name):
     if request.method == "GET":
-        teams = Team.objects.filter(organization__name=org_name)
+        team_filter = authorize_model(request, Team, action="read")
+        teams = Team.objects.filter(team_filter)
         context = {"org_name": org_name, "team_list": teams}
         return render(request, "teams/index.html", context)
     # if request.method == "POST":
@@ -93,22 +151,7 @@ def teams_show(request, org_name, team_name):
     return render(request, "teams/show.html", context)
 
 
-def repos_show(request, org_name, repo_name):
-    repo = get_object_or_404(Repository, organization__name=org_name, name=repo_name)
-    contributors = len(repo.name)
-    commits = contributors * 17
-    last_updated = localtime(now()) - timedelta(hours=commits, minutes=contributors)
-    return render(
-        request,
-        "repos/show.html",
-        {
-            "org_name": org_name,
-            "repo": repo,
-            "commits": commits,
-            "contributors": contributors,
-            "last_updated": last_updated,
-        },
-    )
+# ISSUE VIEWS
 
 
 def issues_index(request, org_name, repo_name):
@@ -140,3 +183,18 @@ def issues_index(request, org_name, repo_name):
     #         Repository(name=name).save()
     #         messages.success(request, 'Repository "%s" created successfully' % name)
     #         return redirect("/repos/")
+
+
+# CONTEXT PROCESSORS
+
+
+def org_context_processor(request):
+    """Pass authZ context into templates."""
+    split_path = request.path.split("/")
+    if len(split_path) > 3 and split_path[1] == "orgs":
+        org_name = split_path[2]
+        people_request = HttpRequest()
+        people_request.path = f"/orgs/{org_name}/people/"
+        can_view_people = Oso.is_allowed(request.user, "GET", people_request)
+        return {"can_view_people": can_view_people}
+    return {}

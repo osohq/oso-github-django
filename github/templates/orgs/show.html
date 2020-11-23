@@ -4,6 +4,9 @@
 <br />
 <a href="{% url 'repos_index' org_name %}"> Repositories </a>
 <a href="{% url 'teams_index' org_name %}"> Teams </a>
+{% if can_view_people %}
+<a href="{% url 'org_people_index' org_name %}"> People </a>
+{% endif %}
 <br />
 <br />
 
