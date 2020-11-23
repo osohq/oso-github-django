@@ -4,24 +4,25 @@
 allow(user: github::User, _action, _resource) if
     user.is_staff;
 
+
 # RBAC BASE POLICY
 
 allow(user: github::User, action: String, resource) if
     rbac_allow(user, action, resource);
 
-# rbac allow for resource-scoped roles to apply to the same resource
+### rbac allow for resource-scoped roles to apply to the same resource
 rbac_allow(user: github::User, action: String, resource) if
     user_in_role(user, role, resource) and
     role_allow(role, action, resource);
 
-# rbac allow to let Repository roles have permissions on their child Issues
-# TODO: improve, maybe this looks like a mixin for nested resources, with abstract `parent` fields
+### rbac allow to let Repository roles have permissions on their child Issues
+### TODO: improve, maybe this looks like a mixin for nested resources, with abstract `parent` fields
 rbac_allow(user: github::User, action: String, issue: github::Issue) if
     user_in_role(user, role, issue.repository) and
     role_allow(role, action, issue);
 
-# rbac allow to let Organization roles have permissions on their child Repositories
-# TODO: improve
+### rbac allow to let Organization roles have permissions on their child Repositories
+### TODO: improve
 rbac_allow(user: github::User, action: String, repo: github::Repository) if
     repo_org = repo.organization and
     repo_org matches github::Organization and
