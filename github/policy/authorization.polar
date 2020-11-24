@@ -227,11 +227,11 @@ inherits_team_role("Maintainer", "Member");
 # #   - e.g., RepositoryRole applies to
 
 
-# Workshopping:
-# Way to consolidate the RBAC allows at the top of the policy:
+# # Workshopping:
+# # Way to consolidate the RBAC allows at the top of the policy:
 
 # # The association between the resource roles and the requested resource is outsourced from the rbac_allow
-# rbac_allow(actor, action, resource) if
+# rbac_allow(actor: github::User, action, resource) if
 #     resource_role_applies_to(resource, role_resource) and
 #     user_in_role(actor, role, role_resource) and
 #     role_allow(role, action, resource);
@@ -240,10 +240,20 @@ inherits_team_role("Maintainer", "Member");
 # resource_role_applies_to(role_resource, role_resource);
 
 # # A repository's roles apply to its child resources (issues)
-# resource_role_applies_to(requested_resource: {repository: parent_repo}, role_resource) if
-#     role_resource = parent_repo;
+# resource_role_applies_to(issue: github::Issue, parent_repo) if
+#     parent_repo = issue.repository and
+#     parent_repo matches github::Repository;
 
 # # An organization's roles apply to its child resources (repos, teams)
-# resource_role_applies_to(requested_resource: {organization: parent_org}, role_resource) if
-#     role_resource = parent_org;
+# resource_role_applies_to(repo: github::Repository, parent_org) if
+#     parent_org = repo.organization and
+#     parent_org matches github::Organization;
 
+# resource_role_applies_to(team: github::Team, parent_org) if
+#     parent_org = team.organization and
+#     parent_org matches github::Organization;
+
+
+# resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
+#     requested_resource.path.split("/") matches ["", "orgs", org_name, *rest] and
+#     role_resource = github::Organization.objects.get(name: org_name);
