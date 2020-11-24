@@ -113,7 +113,7 @@ user_in_role(user: github::User, role, repo: github::Repository) if
 
 # ROLE-PERMISSION RELATIONSHIPS
 
-## Organization Permissions
+## Record-level Organization Permissions
 
 ### All organization roles let users read organizations
 role_allow(role: github::OrganizationRole, "read", org: github::Organization) if
@@ -125,12 +125,22 @@ role_allow(role: github::OrganizationRole, "read", org: github::Organization) if
     # This is a good use case for the `allow iff` syntax.
     role.organization.id = org.id;
 
+## Route-level Organization Permissions
+## TODO: the implementation here isn't ideal (with the split and matches syntax),
+## but this demonstrates a solid use case for specifying paths a role is allowed to access
+
 ### Organization owners can access the "People" org page
 role_allow(role: github::OrganizationRole{name: "Owner"}, "GET", request: HttpRequest) if
-    request.path.split("/") matches ["", "orgs", org_name, "people", *rest] and
+    request.path.split("/") matches ["", "orgs", org_name, "people", *_rest] and
     # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
+### Organization members can access the "Teams" and "Repositories" pages within their organizations
+role_allow(role: github::OrganizationRole{name: "Member"}, "GET", request: HttpRequest) if
+    request.path.split("/") matches ["", "orgs", org_name, page, *_rest] and
+    page in ["teams", "repos"] and
+    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
+    role.organization.name = org_name;
 
 ## Repository Permissions
 
@@ -217,14 +227,23 @@ inherits_team_role("Maintainer", "Member");
 # #   - e.g., RepositoryRole applies to
 
 
+# Workshopping:
+# Way to consolidate the RBAC allows at the top of the policy:
 
-# # A resource's roles apply to itself
-# resource_role_applies(role_resource, role_resource);
+# # The association between the resource roles and the requested resource is outsourced from the rbac_allow
+# rbac_allow(actor, action, resource) if
+#     resource_role_applies_to(resource, role_resource) and
+#     user_in_role(actor, role, role_resource) and
+#     role_allow(role, action, resource);
 
-# # A repository's roles apply to its child issues
-# resource_role_applies_to(role_resource, requested_resource) if
-#     requested_resource.repository = role_resource;
+# # A resource's roles applies to itself
+# resource_role_applies_to(role_resource, role_resource);
 
-# # An organization's roles apply to its child repositories
-# resource_role_applies_to(role_resource: github::Organization, requested_resource: github::Repository) if
-#     requested_resource.organization = role_resource;
+# # A repository's roles apply to its child resources (issues)
+# resource_role_applies_to(requested_resource: {repository: parent_repo}, role_resource) if
+#     role_resource = parent_repo;
+
+# # An organization's roles apply to its child resources (repos, teams)
+# resource_role_applies_to(requested_resource: {organization: parent_org}, role_resource) if
+#     role_resource = parent_org;
+

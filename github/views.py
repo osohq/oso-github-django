@@ -1,4 +1,5 @@
 from django.db.models import F
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
@@ -73,10 +74,11 @@ def org_people_index(request, org_name):
 
 
 @login_required
+@authorize_request
 def repos_index(request, org_name):
     if request.method == "GET":
         repo_filter = authorize_model(request, Repository, action="read")
-        repos = Repository.objects.filter(repo_filter)
+        repos = Repository.objects.filter(repo_filter, organization__name=org_name)
         context = {"org_name": org_name, "repo_list": repos}
         return render(request, "repos/index.html", context)
     if request.method == "POST":
@@ -118,10 +120,11 @@ def repos_show(request, org_name, repo_name):
 
 
 @login_required
+@authorize_request
 def teams_index(request, org_name):
     if request.method == "GET":
         team_filter = authorize_model(request, Team, action="read")
-        teams = Team.objects.filter(team_filter)
+        teams = Team.objects.filter(team_filter, organization__name=org_name)
         context = {"org_name": org_name, "team_list": teams}
         return render(request, "teams/index.html", context)
     # if request.method == "POST":
