@@ -142,6 +142,13 @@ role_allow(role: github::OrganizationRole{name: "Member"}, "GET", request: HttpR
     # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
+### Organization members can hit the route to create repositories
+role_allow(role: github::OrganizationRole{name: "Member"}, "POST", request: HttpRequest) if
+    request.path.split("/") matches ["", "orgs", org_name, page, *_rest] and
+    page in ["repos"] and
+    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
+    role.organization.name = org_name;
+
 ## Repository Permissions
 
 ### TODO: map these to HTTP requests?
@@ -165,6 +172,7 @@ role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github:
 role_allow(role: github::OrganizationRole{name: "Owner"}, "read", team: github::Team) if
     role.organization = team.organization;
 
+### Team members are able to see their own teams
 role_allow(role: github::TeamRole{name: "Member"}, "read", team: github::Team) if
     role.team = team;
 

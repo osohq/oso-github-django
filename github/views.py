@@ -20,6 +20,7 @@ from github.models import (
     Team,
     RepositoryRole,
     OrganizationRole,
+    RepositoryRoleLevel,
 )
 
 DANGER = 50
@@ -86,16 +87,32 @@ def repos_index(request, org_name):
             name = request.POST["name"]
         except KeyError as e:
             messages.add_message(request, DANGER, "Missing field: %s" % str(e))
-            return render(request, "repos/new.html")
+            return render(request, f"repos/new.html")
         else:
             if Repository.objects.filter(name=name).count() > 0:
                 messages.add_message(
                     request, DANGER, "Repository already exists: %s" % name
                 )
-                return render(request, "repos/new.html")
-            Repository(name=name).save()
+                return render(request, "repos/new.html", context={"org_name": org_name})
+
+            # create the repository
+            repo = Repository(
+                name=name, organization=Organization.objects.get(name=org_name)
+            )
+            repo.save()
+            # TODO: need to create the base roles every time a new repo is created
+            for (role_level, _) in RepositoryRoleLevel.choices:
+                role = RepositoryRole(name=role_level, repository=repo)
+                role.save()
+                if role.name == RepositoryRoleLevel.ADMIN:
+                    role.users.add(request.user)
             messages.success(request, 'Repository "%s" created successfully' % name)
-            return redirect("/repos/")
+            print(org_name)
+            return redirect(f"/orgs/{org_name}/repos/")
+
+
+def repos_new(request, org_name):
+    return render(request, "repos/new.html", context={"org_name": org_name})
 
 
 def repos_show(request, org_name, repo_name):

@@ -1,8 +1,16 @@
 {% extends "orgs/show.html" %} {% load i18n %} {% block title %}{% trans
-"Repositories" %}{% endblock %} {% block org_content %} {% if repo_list %}
+"Repositories" %}{% endblock %} {% block org_content %}
 
 <div class="col-md-6">
+  <a href="{% url 'repos_new' org_name %}"
+    ><button class="btn btn-primary float-right" style="margin: 10px">
+      New Repository
+    </button>
+  </a>
   <h3>Repositories</h3>
+  <br />
+  <br />
+  {% if repo_list %}
   <ul class="list-group">
     {% for repo in repo_list %}
     <a

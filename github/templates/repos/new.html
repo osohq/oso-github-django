@@ -1,0 +1,26 @@
+{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "Create
+Repository" %}{% endblock %} {% block content %}
+
+<h2>Create Repository</h2>
+
+<form action="{% url 'repos_index' org_name %}" method="post">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input
+      name="name"
+      type="text"
+      class="form-control"
+      id="name"
+      aria-describedby="nameHelp"
+      placeholder="Repository name"
+      required
+    />
+    <small id="nameHelp" class="form-text text-muted"
+      >Pick a good name for the repository. Must be unique.</small
+    >
+  </div>
+  <input type="submit" class="btn btn-primary" value="Create" />
+</form>
+
+{% endblock %}

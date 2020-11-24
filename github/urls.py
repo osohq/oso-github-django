@@ -10,6 +10,7 @@ from .views import (
     teams_index,
     teams_show,
     org_people_index,
+    repos_new,
 )
 
 
@@ -23,6 +24,7 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("orgs/", orgs_index, name="orgs_index"),
     path("orgs/<org_name>/repos/", repos_index, name="repos_index"),
+    path("orgs/<org_name>/repos/new/", repos_new, name="repos_new"),
     path("orgs/<org_name>/repos/<repo_name>", repos_show, name="repos_show"),
     path(
         "orgs/<org_name>/repos/<repo_name>/issues/", issues_index, name="issues_index"
