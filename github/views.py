@@ -133,6 +133,26 @@ def repos_show(request, org_name, repo_name):
     )
 
 
+def repo_roles_index(request, org_name, repo_name):
+    roles = RepositoryRole.objects.filter(
+        repository__name=repo_name, repository__organization__name=org_name
+    ).prefetch_related("users")
+    user_roles = []
+    for role in roles:
+        for user in role.users.all():
+            user_roles.append((user.username, role.name))
+
+    return render(
+        request,
+        "repos/roles.html",
+        context={
+            "org_name": org_name,
+            "repo_name": repo_name,
+            "user_roles": user_roles,
+        },
+    )
+
+
 # TEAM VIEWS
 
 

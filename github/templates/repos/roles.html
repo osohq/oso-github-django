@@ -1,0 +1,21 @@
+{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "Roles" %}
+{% endblock %} {% block content %}
+
+<h1>
+  <a href="{% url 'repos_index' org_name %}">{{ org_name }}</a> /
+  <a href="{% url 'repos_show' org_name repo_name %}">{{ repo_name }}</a>
+</h1>
+
+<div class="col-md-6">
+  <h2>Roles</h2>
+
+  <ul class="list-group">
+    {% for user_role in user_roles %}
+    <p style="text-align: left">
+      <b> {{ user_role.0 }} </b
+      ><span style="float: right">{{ user_role.1 }}</span>
+    </p>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

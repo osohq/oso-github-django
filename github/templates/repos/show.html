@@ -21,4 +21,14 @@ Repository" %}{% endblock %} {% block content %}
   </a>
 </div>
 
+<br />
+
+<div>
+  <a href="{% url 'repo_roles_index' org_name repo.name %}">
+    <h4 class="text-primary">
+      <b><pre>Manage Access</pre></b>
+    </h4>
+  </a>
+</div>
+
 {% endblock %}
