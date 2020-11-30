@@ -13,5 +13,95 @@
             1
         ]
     }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 2,
+    "fields": {
+        "name": "Write",
+        "repository": 1,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 3,
+    "fields": {
+        "name": "Maintain",
+        "repository": 1,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 4,
+    "fields": {
+        "name": "Triage",
+        "repository": 1,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 5,
+    "fields": {
+        "name": "Admin",
+        "repository": 1,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 6,
+    "fields": {
+        "name": "Read",
+        "repository": 2,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 7,
+    "fields": {
+        "name": "Write",
+        "repository": 2,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 8,
+    "fields": {
+        "name": "Maintain",
+        "repository": 2,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 9,
+    "fields": {
+        "name": "Triage",
+        "repository": 2,
+        "users": [],
+        "teams": []
+    }
+},
+{
+    "model": "github.repositoryrole",
+    "pk": 10,
+    "fields": {
+        "name": "Admin",
+        "repository": 2,
+        "users": [],
+        "teams": []
+    }
 }
 ]
