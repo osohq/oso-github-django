@@ -5,7 +5,7 @@ from django.db.models.deletion import CASCADE
 
 from django_oso.models import AuthorizedModel
 
-## ENUMERATIONS ##
+## CHOICES ##
 
 
 class RepositoryRoleLevel(models.TextChoices):
@@ -45,8 +45,6 @@ class Organization(AuthorizedModel):
 class User(AbstractUser):
     # basic info
     email = models.CharField(max_length=256)
-
-    organizations = models.ManyToManyField(Organization)
 
 
 class Team(AuthorizedModel):

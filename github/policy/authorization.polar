@@ -7,44 +7,46 @@ allow(user: github::User, _action, _resource) if
 
 # RBAC BASE POLICY
 
+## Top-level RBAC allow rule
+
 allow(user: github::User, action: String, resource) if
     rbac_allow(user, action, resource);
 
-### rbac allow for resource-scoped roles to apply to the same resource
-rbac_allow(user: github::User, action: String, resource) if
-    user_in_role(user, role, resource) and
+### The association between the resource roles and the requested resource is outsourced from the rbac_allow
+rbac_allow(actor: github::User, action, resource) if
+    resource_role_applies_to(resource, role_resource) and
+    user_in_role(actor, role, role_resource) and
     role_allow(role, action, resource);
 
-### rbac allow to let Repository roles have permissions on their child Issues
-### TODO: improve, maybe this looks like a mixin for nested resources, with abstract `parent` fields
-rbac_allow(user: github::User, action: String, issue: github::Issue) if
-    user_in_role(user, role, issue.repository) and
-    role_allow(role, action, issue);
+## Resource-role relationships
 
-### rbac allow to let Organization roles have permissions on their child Repositories
-### TODO: improve
-rbac_allow(user: github::User, action: String, repo: github::Repository) if
-    repo_org = repo.organization and
-    repo_org matches github::Organization and
-    user_in_role(user, role, repo_org) and
-    role_allow(role, action, repo);
+### A resource's roles applies to itself
+resource_role_applies_to(role_resource, role_resource);
 
-### rbac allow to let Organization roles have permissions on their child Teams
-### TODO: improve
-rbac_allow(user: github::User, action: String, team: github::Team) if
-    team_org = team.organization and
-    team_org matches github::Organization and
-    user_in_role(user, role, team_org) and
-    role_allow(role, action, team);
+### A repository's roles apply to its child resources (issues)
+resource_role_applies_to(issue: github::Issue, parent_repo) if
+    parent_repo = issue.repository and
+    parent_repo matches github::Repository;
 
-### rbac allow to let Organization roles have permissions on HttpRequests that match the "/orgs/" route
-### TODO: is this the right way to handle these pages? Would it be better to do this as "model-based access" and
-### pass in a class for the actual resource being accessed instead?
-rbac_allow(user: github::User, action, request: HttpRequest) if
-    request.path.split("/") matches ["", "orgs", org_name, *rest] and
-    org = github::Organization.objects.get(name: org_name) and
-    user_in_role(user, role, org) and
-    role_allow(role, action, request);
+### An organization's roles apply to its child resources (repos, teams)
+resource_role_applies_to(repo: github::Repository, parent_org) if
+    parent_org = repo.organization and
+    parent_org matches github::Organization;
+
+resource_role_applies_to(team: github::Team, parent_org) if
+    parent_org = team.organization and
+    parent_org matches github::Organization;
+
+
+### Org roles apply to HttpRequests with paths starting /orgs/<org_name>/
+resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
+    requested_resource.path.split("/") matches ["", "orgs", org_name, *rest] and
+    role_resource = github::Organization.objects.get(name: org_name);
+
+### Org roles apply to HttpRequests with paths starting /orgs/<org_name>/repos/<repo_name>/
+resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
+    requested_resource.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, *rest] and
+    role_resource = github::Repository.objects.get(name: repo_name);
 
 
 # USER-ROLE RELATIONSHIPS
@@ -131,21 +133,20 @@ role_allow(role: github::OrganizationRole, "read", org: github::Organization) if
 
 ### Organization owners can access the "People" org page
 role_allow(role: github::OrganizationRole{name: "Owner"}, "GET", request: HttpRequest) if
-    request.path.split("/") matches ["", "orgs", org_name, "people", *_rest] and
+    request.path.split("/") matches ["", "orgs", org_name, "people", ""] and
     # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
 ### Organization members can access the "Teams" and "Repositories" pages within their organizations
 role_allow(role: github::OrganizationRole{name: "Member"}, "GET", request: HttpRequest) if
-    request.path.split("/") matches ["", "orgs", org_name, page, *_rest] and
+    request.path.split("/") matches ["", "orgs", org_name, page, ""] and
     page in ["teams", "repos"] and
     # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
 ### Organization members can hit the route to create repositories
 role_allow(role: github::OrganizationRole{name: "Member"}, "POST", request: HttpRequest) if
-    request.path.split("/") matches ["", "orgs", org_name, page, *_rest] and
-    page in ["repos"] and
+    request.path.split("/") matches ["", "orgs", org_name, "repos", ""] and
     # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
@@ -165,6 +166,17 @@ role_allow(role: github::RepositoryRole{name: "Read"}, "read", issue: github::Is
 role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github::Repository) if
     role.organization = repo.organization and
     repo.organization.base_role = "Read";
+
+### Repository admins can access the "Roles" repo page
+role_allow(role: github::RepositoryRole{name: "Admin"}, "GET", request: HttpRequest) if
+    request.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, "roles", ""] and
+    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
+    role.repository.name = repo_name;
+
+# TODO: would like to have all organization owners get admin roles on all repos, but can't do that easily now
+role_allow(role: github::OrganizationRole{name: "Owner"}, "GET", request: HttpRequest) if
+    request.path.split("/") matches ["", "orgs", org_name, "repos", _repo_name, "roles", ""] and
+    role.organization.name = org_name;
 
 ## Team Permissions
 
@@ -190,12 +202,11 @@ inherits_role(role: github::RepositoryRole, inherited_role) if
     inherits_repository_role(role.name, inherited_role_name) and
     inherited_role = new github::RepositoryRole(name: inherited_role_name, repository: role.repository);
 
-# TODO: this doesn't feel like the ideal way to express this hierarchy, quite redundant
+# TODO: this doesn't feel like the ideal way to express this hierarchy, quite redundant (make it a list)
 inherits_repository_role("Admin", "Maintain");
 inherits_repository_role("Maintain", "Write");
 inherits_repository_role("Write", "Triage");
 inherits_repository_role("Triage", "Read");
-
 
 ### Role inheritance for organization roles
 inherits_role(role: github::OrganizationRole, inherited_role) if
@@ -237,31 +248,3 @@ inherits_team_role("Maintainer", "Member");
 
 # # Workshopping:
 # # Way to consolidate the RBAC allows at the top of the policy:
-
-# # The association between the resource roles and the requested resource is outsourced from the rbac_allow
-# rbac_allow(actor: github::User, action, resource) if
-#     resource_role_applies_to(resource, role_resource) and
-#     user_in_role(actor, role, role_resource) and
-#     role_allow(role, action, resource);
-
-# # A resource's roles applies to itself
-# resource_role_applies_to(role_resource, role_resource);
-
-# # A repository's roles apply to its child resources (issues)
-# resource_role_applies_to(issue: github::Issue, parent_repo) if
-#     parent_repo = issue.repository and
-#     parent_repo matches github::Repository;
-
-# # An organization's roles apply to its child resources (repos, teams)
-# resource_role_applies_to(repo: github::Repository, parent_org) if
-#     parent_org = repo.organization and
-#     parent_org matches github::Organization;
-
-# resource_role_applies_to(team: github::Team, parent_org) if
-#     parent_org = team.organization and
-#     parent_org matches github::Organization;
-
-
-# resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
-#     requested_resource.path.split("/") matches ["", "orgs", org_name, *rest] and
-#     role_resource = github::Organization.objects.get(name: org_name);

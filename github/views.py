@@ -107,6 +107,7 @@ def repos_index(request, org_name):
                 role.save()
                 if role.name == RepositoryRoleLevel.ADMIN:
                     role.users.add(request.user)
+                    role.save()
             messages.success(request, 'Repository "%s" created successfully' % name)
             print(org_name)
             return redirect(f"/orgs/{org_name}/repos/")
@@ -118,6 +119,7 @@ def repos_new(request, org_name):
 
 def repos_show(request, org_name, repo_name):
     repo = get_object_or_404(Repository, organization__name=org_name, name=repo_name)
+    authorize(request, repo, action="read")
     contributors = len(repo.name)
     commits = contributors * 17
     last_updated = localtime(now()) - timedelta(hours=commits, minutes=contributors)
@@ -134,6 +136,7 @@ def repos_show(request, org_name, repo_name):
     )
 
 
+@authorize_request
 def repo_roles_index(request, org_name, repo_name):
     if request.method == "GET":
         roles = RepositoryRole.objects.filter(
@@ -169,7 +172,6 @@ def repo_roles_index(request, org_name, repo_name):
         new_role = RepositoryRole.objects.get(
             repository__name=repo_name, name=new_role_name
         )
-
         user.repositoryrole_set.remove(old_role)
         user.repositoryrole_set.add(new_role)
         return redirect(request.path_info)
