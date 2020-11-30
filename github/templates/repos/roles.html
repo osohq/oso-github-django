@@ -10,11 +10,15 @@
   <h2>Roles</h2>
 
   <ul class="list-group">
-    {% for user_role in user_roles %}
-    <p style="text-align: left">
-      <b> {{ user_role.0 }} </b
-      ><span style="float: right">{{ user_role.1 }}</span>
-    </p>
+    {% for user_form in user_forms %}
+    <form
+      action="{% url 'repo_roles_index' org_name repo_name %}"
+      method="post"
+    >
+      {% csrf_token %} {{ user_form.1 }}
+      <input type="hidden" name="username" value="{{ user_form.0 }}" />
+      <input type="submit" value="Submit" />
+    </form>
     {% endfor %}
   </ul>
 </div>

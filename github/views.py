@@ -22,6 +22,7 @@ from github.models import (
     OrganizationRole,
     RepositoryRoleLevel,
 )
+from github.forms import RepositoryRoleForm
 
 DANGER = 50
 
@@ -134,23 +135,44 @@ def repos_show(request, org_name, repo_name):
 
 
 def repo_roles_index(request, org_name, repo_name):
-    roles = RepositoryRole.objects.filter(
-        repository__name=repo_name, repository__organization__name=org_name
-    ).prefetch_related("users")
-    user_roles = []
-    for role in roles:
-        for user in role.users.all():
-            user_roles.append((user.username, role.name))
+    if request.method == "GET":
+        roles = RepositoryRole.objects.filter(
+            repository__name=repo_name, repository__organization__name=org_name
+        ).prefetch_related("users")
+        user_forms = []
+        for role in roles:
+            for user in role.users.all():
+                form = RepositoryRoleForm(
+                    initial={"username": user.username, "role": role.name}
+                )
+                user_forms.append((user.username, form))
 
-    return render(
-        request,
-        "repos/roles.html",
-        context={
-            "org_name": org_name,
-            "repo_name": repo_name,
-            "user_roles": user_roles,
-        },
-    )
+        user_forms.sort(key=lambda x: x[0])
+
+        return render(
+            request,
+            "repos/roles.html",
+            context={
+                "org_name": org_name,
+                "repo_name": repo_name,
+                "user_forms": user_forms,
+            },
+        )
+    elif request.method == "POST":
+        form = RepositoryRoleForm(request.POST)
+        new_role_name = form["role"].value()
+        username = request.POST.get("username")
+        user = User.objects.get(username=username)
+
+        # TODO: improve updating roles with library support
+        old_role = RepositoryRole.objects.get(repository__name=repo_name, users=user)
+        new_role = RepositoryRole.objects.get(
+            repository__name=repo_name, name=new_role_name
+        )
+
+        user.repositoryrole_set.remove(old_role)
+        user.repositoryrole_set.add(new_role)
+        return redirect(request.path_info)
 
 
 # TEAM VIEWS
