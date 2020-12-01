@@ -25,17 +25,14 @@ resource_role_applies_to(role_resource, role_resource);
 
 ### A repository's roles apply to its child resources (issues)
 resource_role_applies_to(issue: github::Issue, parent_repo) if
-    parent_repo = issue.repository and
-    parent_repo matches github::Repository;
+    parent_repo = issue.repository;
 
 ### An organization's roles apply to its child resources (repos, teams)
 resource_role_applies_to(repo: github::Repository, parent_org) if
-    parent_org = repo.organization and
-    parent_org matches github::Organization;
+    parent_org = repo.organization;
 
 resource_role_applies_to(team: github::Team, parent_org) if
-    parent_org = team.organization and
-    parent_org matches github::Organization;
+    parent_org = team.organization;
 
 
 ### Org roles apply to HttpRequests with paths starting /orgs/<org_name>/
@@ -56,9 +53,6 @@ resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
 ### User role source: direct mapping between users and organization roles
 user_in_role(user: github::User, role, org: github::Organization) if
     # role is an OrganizationRole object
-    # TODO: the model that you filter here has big implications for partials.
-    # it makes sense to start with the model you want, but depending on what
-    # you plan to pass in as a partial, there are other ways you could do it
     role in github::OrganizationRole.objects.filter(users: user) and
     role.organization.id = org.id;
 
@@ -95,17 +89,11 @@ user_in_role(user: github::User, role, repo: github::Repository) if
     role in github::RepositoryRole.objects.filter(users: user) and
     role.repository.id = repo.id;
 
+
 ### Team role source: direct mapping between teams and repository roles
 team_in_role(team: github::Team, role, repo: github::Repository) if
     role in github::RepositoryRole.objects.filter(teams: team) and
     role.repository.id = repo.id;
-
-### TODO: this rule doesn't work because it is passing in repo attributes
-### to an external method with the `new` operator
-### User role source: organization base role
-# user_in_role(user: github::User, role, repo: github::Repository) if
-#     user_in_org(user, repo.organization) and
-#     role = new github::RepositoryRole(name: repo.organization.base_role, repository: repo);
 
 ### User role source: team role
 user_in_role(user: github::User, role, repo: github::Repository) if
@@ -119,40 +107,29 @@ user_in_role(user: github::User, role, repo: github::Repository) if
 
 ### All organization roles let users read organizations
 role_allow(role: github::OrganizationRole, "read", org: github::Organization) if
-    # TODO: this check is technically enforced by `user_in_role`, which is standardly always called
-    # before `role_allow`. However, it feels weird not to have the check here.
-    # something we could do is have a top-level `role_allow_for_resource`, which calls the `role_allow` rules,
-    # but this feels like the same problem. If you farm out a check, it feels like you should have a way
-    # of making the underlying rule PRIVATE, so that it can't be accidentally used without the check.
-    # This is a good use case for the `allow iff` syntax.
     role.organization.id = org.id;
 
 ## Route-level Organization Permissions
-## TODO: the implementation here isn't ideal (with the split and matches syntax),
-## but this demonstrates a solid use case for specifying paths a role is allowed to access
 
 ### Organization owners can access the "People" org page
 role_allow(role: github::OrganizationRole{name: "Owner"}, "GET", request: HttpRequest) if
     request.path.split("/") matches ["", "orgs", org_name, "people", ""] and
-    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
+    # this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
 ### Organization members can access the "Teams" and "Repositories" pages within their organizations
 role_allow(role: github::OrganizationRole{name: "Member"}, "GET", request: HttpRequest) if
     request.path.split("/") matches ["", "orgs", org_name, page, ""] and
     page in ["teams", "repos"] and
-    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
 ### Organization members can hit the route to create repositories
 role_allow(role: github::OrganizationRole{name: "Member"}, "POST", request: HttpRequest) if
     request.path.split("/") matches ["", "orgs", org_name, "repos", ""] and
-    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.organization.name = org_name;
 
 ## Repository Permissions
 
-### TODO: map these to HTTP requests?
 ### Read role can read the repository
 role_allow(role: github::RepositoryRole{name: "Read"}, "read", repo: github::Repository) if
     role.repository.id = repo.id;
@@ -161,8 +138,7 @@ role_allow(role: github::RepositoryRole{name: "Read"}, "read", repo: github::Rep
 role_allow(role: github::RepositoryRole{name: "Read"}, "read", issue: github::Issue) if
     role.repository.id = issue.repository.id;
 
-### Hack around organization base roles (ignoring the role basically makes this a normal allow rule)
-### TODO: figure out better way to implement this
+### TODO: (clean up) Hack around organization base roles (ignoring the role basically makes this a normal allow rule)
 role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github::Repository) if
     role.organization = repo.organization and
     repo.organization.base_role = "Read";
@@ -170,10 +146,10 @@ role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github:
 ### Repository admins can access the "Roles" repo page
 role_allow(role: github::RepositoryRole{name: "Admin"}, "GET", request: HttpRequest) if
     request.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, "roles", ""] and
-    # TODO: this is enforced in the `rbac_allow` rule, but checking here to be safe
     role.repository.name = repo_name;
 
-# TODO: would like to have all organization owners get admin roles on all repos, but can't do that easily now
+
+# # TODO: would like to have all organization owners get admin role on all repos, but can't do that easily now
 role_allow(role: github::OrganizationRole{name: "Owner"}, "GET", request: HttpRequest) if
     request.path.split("/") matches ["", "orgs", org_name, "repos", _repo_name, "roles", ""] and
     role.organization.name = org_name;
