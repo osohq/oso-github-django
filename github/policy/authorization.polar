@@ -9,6 +9,7 @@ allow(user: github::User, _action, _resource) if
 
 ## Top-level RBAC allow rule
 
+### To disable the RBAC policy, simply comment out this rule
 allow(user: github::User, action: String, resource) if
     rbac_allow(user, action, resource);
 
@@ -219,20 +220,3 @@ inherits_role_helper(role, inherited_role, role_order) if
     inherited_role in rest) or
     ([first, *rest] = role_order and
     inherits_role_helper(role, inherited_role, rest));
-
-
-
-# ######## NOTES ###########
-# # Actor types:
-# # - users
-# # - user groups
-# #
-# # Role scope types:
-# # - resources (e.g. repositories)
-# # - resource groups OR tenants (e.g. organizations)
-# #   - are tenants only relevant as resource groups? E.g. an organization groups repositories?
-# #   - are resource groups just resources with nested resources inside them?
-# #
-# # - `user_in_role` is only being used to get roles, and won't work properly to check roles, since
-# #    roles are django models, not Strings. Should we explicitly name them `get_user_role`?
-# #   - related: would be helpful to mark an unbound variable with a specializer

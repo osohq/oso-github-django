@@ -107,3 +107,5 @@ Assigning roles to groups of users, rather than individual users, is a [common r
 We have three resource-specific roles in the application, but each of those resources has more resource types nested inside it. GitHub, like many apps, applies the roles associated with a top-level resource to the resources nested within that resource as well. For example, someone with the "Read" role in a repository should also be able to read all the repository's issues, even though the `Issue` model doesn't have an explict role associated with it.
 
 This is implemented in the oso policy(`github/policy/authorization.polar`) with the `rbac_allow` and `resource_role_applies_to` rules.
+
+The implementation in this policy is different from that shown in the roles guide, which demonstrates two other alternative implementations [here](https://docs.osohq.com/getting-started/rbac.html#resource-hierarchies-nested-resources).
