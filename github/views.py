@@ -118,22 +118,31 @@ def repos_new(request, org_name):
 
 
 def repos_show(request, org_name, repo_name):
-    repo = get_object_or_404(Repository, organization__name=org_name, name=repo_name)
-    authorize(request, repo, action="read")
-    contributors = len(repo.name)
-    commits = contributors * 17
-    last_updated = localtime(now()) - timedelta(hours=commits, minutes=contributors)
-    return render(
-        request,
-        "repos/show.html",
-        {
-            "org_name": org_name,
-            "repo": repo,
-            "commits": commits,
-            "contributors": contributors,
-            "last_updated": last_updated,
-        },
-    )
+    if request.method == "GET":
+        repo = get_object_or_404(
+            Repository, organization__name=org_name, name=repo_name
+        )
+        authorize(request, repo, action="read")
+        contributors = len(repo.name)
+        commits = contributors * 17
+        last_updated = localtime(now()) - timedelta(hours=commits, minutes=contributors)
+        return render(
+            request,
+            "repos/show.html",
+            {
+                "org_name": org_name,
+                "repo": repo,
+                "commits": commits,
+                "contributors": contributors,
+                "last_updated": last_updated,
+            },
+        )
+    if request.method == "POST":
+        if "delete_repo" in request.POST:
+            repo = Repository.objects.get(organization__name=org_name, name=repo_name)
+        authorize(request, repo, action="delete")
+        repo.delete()
+        return redirect(f"/orgs/{org_name}/repos/")
 
 
 @authorize_request
