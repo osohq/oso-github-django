@@ -1,25 +1,37 @@
 # Modeling GitHub permissions with oso
 
-## Overview
-
 This application is a sample application based on GitHub, meant to model the basics of GitHub's permissions system.
 The app uses the `django-oso` [authorization library](https://docs.osohq.com/using/frameworks/django.html) to model and enforce this system. For more information on oso, check out our docs.
 
 The data model is based on the B2B features of GitHub (it does not cover the B2C features).
 
-### Application Data Model
+## Application Data Model
 
 The app has the following models:
 
 - `Organization`
   - Organizations are the top-level grouping of users and resources in the app. As with the real GitHub, users can be in multiple Organizations, and may have different permission levels in each.
 - `User`
+  - GitHub users, built with Django's `AbstractUser` model. Users can have roles within Organizations, Teams, and Repositories.
 - `Team`
+  - Groups of users within an organizaiton. They can be nested. Teams can have roles within Repositories.
 - `Repository`
+  - GitHub repositories, each is associated with a single organization.
 - `Issue`
+  - GitHub issues; each is associated with a single repository.
 - `OrganizationRole`
+  - Roles scoped to organizations; each is associated with a single organizaiton.
+  - Assigned to users through a many-to-many relationship.
+  - The role levels are: Owner, Member, and Billing Manager.
 - `TeamRole`
+  - Roles scoped to teams; each is associated with a single team.
+  - Assigned to users through a many-to-many relationship.
+  - The role levels are: Maintainer, Member.
 - `RepositoryRole`
+  - Roles scoped to repositories; each is associated with a single repository.
+  - The role levels are: Admin, Maintain, Write, Triage, Read.
+  - Assigned to users through a many-to-many relationship.
+  - Assigned to teams through a many-to-many relationship.
 
 Model hierarchy:
 
