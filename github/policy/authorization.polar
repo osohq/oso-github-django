@@ -20,6 +20,10 @@ rbac_allow(actor: github::User, action, resource) if
 
 ## Resource-role relationships
 
+### These rules allow a roles to apply to resources other than those that they are scoped to.
+### The most common example of this is nested resources, e.g. Repository roles should apply to the Issues
+### nested in that repository.
+
 ### A resource's roles applies to itself
 resource_role_applies_to(role_resource, role_resource);
 
