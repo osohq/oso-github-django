@@ -37,12 +37,12 @@ resource_role_applies_to(team: github::Team, parent_org) if
 
 ### Org roles apply to HttpRequests with paths starting /orgs/<org_name>/
 resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
-    requested_resource.path.split("/") matches ["", "orgs", org_name, *rest] and
+    requested_resource.path.split("/") matches ["", "orgs", org_name, *_rest] and
     role_resource = github::Organization.objects.get(name: org_name);
 
 ### Org roles apply to HttpRequests with paths starting /orgs/<org_name>/repos/<repo_name>/
 resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
-    requested_resource.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, *rest] and
+    requested_resource.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, *_rest] and
     role_resource = github::Repository.objects.get(name: repo_name);
 
 
@@ -55,8 +55,6 @@ user_in_role(user: github::User, role, org: github::Organization) if
     # role is an OrganizationRole object
     role in github::OrganizationRole.objects.filter(users: user) and
     role.organization.id = org.id;
-
-### TODO: maybe another role source is being the creator of an organization -> owner role?
 
 
 ## Organization Helpers
@@ -180,32 +178,43 @@ role_allow(role, action, resource) if
     inherits_role(role, inherited_role) and
     role_allow(inherited_role, action, resource);
 
+
 ### Role inheritance for repository roles
 inherits_role(role: github::RepositoryRole, inherited_role) if
-    inherits_repository_role(role.name, inherited_role_name) and
+    repository_role_order(role_order) and
+    inherits_role_helper(role.name, inherited_role_name, role_order) and
     inherited_role = new github::RepositoryRole(name: inherited_role_name, repository: role.repository);
 
-# TODO: this doesn't feel like the ideal way to express this hierarchy, quite redundant (make it a list)
-inherits_repository_role("Admin", "Maintain");
-inherits_repository_role("Maintain", "Write");
-inherits_repository_role("Write", "Triage");
-inherits_repository_role("Triage", "Read");
+### Specify repository role order (most senior on left)
+repository_role_order(["Admin", "Maintain", "Write", "Triage", "Read"]);
+
 
 ### Role inheritance for organization roles
 inherits_role(role: github::OrganizationRole, inherited_role) if
-    inherits_org_role(role.name, inherited_role_name) and
+    organization_role_order(role_order) and
+    inherits_role_helper(role.name, inherited_role_name, role_order) and
     inherited_role = new github::OrganizationRole(name: inherited_role_name, organization: role.organization);
 
-inherits_org_role("Owner", "Member");
-inherits_org_role("Owner", "Billing");
+### Specify organization role order (most senior on left)
+organization_role_order(["Owner", "Member"]);
+organization_role_order(["Owner", "Billing"]);
 
 ### Role inheritance for team roles
 inherits_role(role: github::TeamRole, inherited_role) if
-    inherits_team_role(role.name, inherited_role_name) and
-    inherited_role = new github::TeamRole(name: inherited_role_name, team: role.team);
+    team_role_order(role_order) and
+    inherits_role_helper(role.name, inherited_role_name, role_order) and
+    inherited_role := new github::TeamRole(name: inherited_role_name, team: role.team);
 
-inherits_team_role("Maintainer", "Member");
+### Specify team role order (most senior on left)
+team_role_order(["Maintainer", "Member"]);
 
+### Helper to determine relative order or roles in a list
+inherits_role_helper(role, inherited_role, role_order) if
+    ([first, *rest] = role_order and
+    role = first and
+    inherited_role in rest) or
+    ([first, *rest] = role_order and
+    inherits_role_helper(role, inherited_role, rest));
 
 
 
@@ -222,12 +231,4 @@ inherits_team_role("Maintainer", "Member");
 # #
 # # - `user_in_role` is only being used to get roles, and won't work properly to check roles, since
 # #    roles are django models, not Strings. Should we explicitly name them `get_user_role`?
-# #   - related: would be helpfult to mark an unbound variable with a specializer
-# #
-# # - Something we might be missing:
-# #   - a standard way to map the resources that role types apply to
-# #   - e.g., RepositoryRole applies to
-
-
-# # Workshopping:
-# # Way to consolidate the RBAC allows at the top of the policy:
+# #   - related: would be helpful to mark an unbound variable with a specializer
