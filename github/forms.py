@@ -4,5 +4,5 @@ from .models import RepositoryRole, User, Repository, RepositoryRoleLevel
 
 # Create the form class.
 class RepositoryRoleForm(Form):
-    username = CharField(max_length=256, disabled=True)
+    name = CharField(max_length=256, disabled=True)
     role = ChoiceField(choices=RepositoryRoleLevel.choices)

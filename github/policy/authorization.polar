@@ -144,13 +144,13 @@ role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github:
     repo.organization.base_role = "Read";
 
 ### Repository admins can access the "Roles" repo page
-role_allow(role: github::RepositoryRole{name: "Admin"}, "GET", request: HttpRequest) if
+role_allow(role: github::RepositoryRole{name: "Admin"}, _action, request: HttpRequest) if
     request.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, "roles", ""] and
     role.repository.name = repo_name;
 
 
 # # TODO: would like to have all organization owners get admin role on all repos, but can't do that easily now
-role_allow(role: github::OrganizationRole{name: "Owner"}, "GET", request: HttpRequest) if
+role_allow(role: github::OrganizationRole{name: "Owner"}, _action, request: HttpRequest) if
     request.path.split("/") matches ["", "orgs", org_name, "repos", _repo_name, "roles", ""] and
     role.organization.name = org_name;
 

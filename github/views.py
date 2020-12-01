@@ -143,14 +143,21 @@ def repo_roles_index(request, org_name, repo_name):
             repository__name=repo_name, repository__organization__name=org_name
         ).prefetch_related("users")
         user_forms = []
+        team_forms = []
         for role in roles:
             for user in role.users.all():
                 form = RepositoryRoleForm(
-                    initial={"username": user.username, "role": role.name}
+                    initial={"name": user.username, "role": role.name}
                 )
                 user_forms.append((user.username, form))
+            for team in role.teams.all():
+                form = RepositoryRoleForm(
+                    initial={"name": team.name, "role": role.name}
+                )
+                team_forms.append((team.name, form))
 
         user_forms.sort(key=lambda x: x[0])
+        team_forms.sort(key=lambda x: x[0])
 
         return render(
             request,
@@ -159,21 +166,36 @@ def repo_roles_index(request, org_name, repo_name):
                 "org_name": org_name,
                 "repo_name": repo_name,
                 "user_forms": user_forms,
+                "team_forms": team_forms,
             },
         )
     elif request.method == "POST":
         form = RepositoryRoleForm(request.POST)
         new_role_name = form["role"].value()
-        username = request.POST.get("username")
-        user = User.objects.get(username=username)
-
-        # TODO: improve updating roles with library support
-        old_role = RepositoryRole.objects.get(repository__name=repo_name, users=user)
         new_role = RepositoryRole.objects.get(
             repository__name=repo_name, name=new_role_name
         )
-        user.repositoryrole_set.remove(old_role)
-        user.repositoryrole_set.add(new_role)
+        try:
+            username = request.POST.get("username")
+            user = User.objects.get(username=username)
+
+            # TODO: improve updating roles with library support
+            old_role = RepositoryRole.objects.get(
+                repository__name=repo_name, users=user
+            )
+            user.repositoryrole_set.remove(old_role)
+            user.repositoryrole_set.add(new_role)
+        except:
+            teamname = request.POST.get("teamname")
+            team = Team.objects.get(name=teamname)
+
+            # TODO: improve updating roles with library support
+            old_role = RepositoryRole.objects.get(
+                repository__name=repo_name, teams=team
+            )
+            team.repositoryrole_set.remove(old_role)
+            team.repositoryrole_set.add(new_role)
+
         return redirect(request.path_info)
 
 
