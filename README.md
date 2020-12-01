@@ -6,6 +6,46 @@ The app uses the `django-oso` [authorization library](https://docs.osohq.com/usi
 The data model is based on the B2B features of GitHub (it does not cover the B2C features).
 It includes the following models.
 
+### Running the App
+
+To run the application, complete the following steps:
+
+1. Set up a virtual environment and install required packages
+
+   ```
+   $ python -m venv venv/
+
+   $ pip install -r requirements.txt
+   ```
+
+2. Create the database
+
+   ```
+   $ python manage.py migrate
+   ```
+
+3. [OPTIONAL] Load the fixture data. This will create some seed data, as well as a superuser with the following credentials:
+   username: admin
+   password: ilikecats
+
+   ```
+   $ bash ./github/fixtures/load.sh
+   ```
+
+   If you don't load the fixture data, you will need to create your own superuser with
+
+   ```
+   $ python manage.py createsuperuser
+   ```
+
+4. Run the server
+
+   ```
+   $ python manage.py runserver
+   ```
+
+   Once the server is running, you can login to the admin dashboard (localhost:8000/admin) to view or create more sample data (and see the passwords for test users).
+
 ### Application Data Model
 
 The app has the following models:
@@ -23,6 +63,7 @@ The app has the following models:
 Model hierarchy:
 
 ```
+
        Organizations ------------> OrganizationRoles: - Owner
              |                                        - Member
     +---+----+--------+                               - Billing Manager
@@ -32,9 +73,9 @@ Model hierarchy:
     |   |             |
     +---+---+    Repositories ---> RepositoryRoles: - Admin
     |       |         |                             - Maintain
-  Users   Teams     Issues                          - Write
-                                                    - Triage
-                                                    - Read
+
+Users Teams Issues - Write - Triage - Read
+
 ```
 
 ## Authorization Patterns
@@ -109,3 +150,7 @@ We have three resource-specific roles in the application, but each of those reso
 This is implemented in the oso policy(`github/policy/authorization.polar`) with the `rbac_allow` and `resource_role_applies_to` rules.
 
 The implementation in this policy is different from that shown in the roles guide, which demonstrates two other alternative implementations [here](https://docs.osohq.com/getting-started/rbac.html#resource-hierarchies-nested-resources).
+
+```
+
+```

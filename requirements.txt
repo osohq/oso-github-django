@@ -1,0 +1,2 @@
+oso~=0.8
+django-oso~=0.4
