@@ -1,7 +1,7 @@
 # Modeling GitHub permissions with oso
 
 This application is a sample application based on GitHub, meant to model the basics of GitHub's permissions system.
-The app uses the `django-oso` authorization library to model and enforce this system. For more information on oso, check out our docs.
+The app uses the `django-oso` [authorization library](https://docs.osohq.com/using/frameworks/django.html) to model and enforce this system. For more information on oso, check out our docs.
 
 The data model is based on the B2B features of GitHub (it does not cover the B2C features).
 It includes the following models.
@@ -71,7 +71,7 @@ The three types of resource-specific roles in the app are:
   - Users and teams are related to repositories by having one of these roles.
   - Based on GitHub's [repository permission levels](https://docs.github.com/en/free-pro-team@latest/github/setting-up-and-managing-organizations-and-teams/repository-permission-levels-for-an-organization)
 
-| NOTE: in the roles guide, we distinguish between "Resource-specific roles" and "tenant-specific roles." However, in this app organizations are basically tenants and we refer to their roles as resource-specific. This is because in our data model, organizations are represented as Django models and have many-to-many relationships with users, just like teams and repositories. In this case, tenant-specific roles can be implemeneted as resource-specific roles. If tenancy is modeled differently, for example with a per-session tenant ID, then the tenant-specific roles section in the guide may be useful.
+> NOTE: in the roles guide, we distinguish between "Resource-specific roles" and "tenant-specific roles." However, in this app organizations are basically tenants and we refer to their roles as resource-specific. This is because in our data model, organizations are represented as Django models and have many-to-many relationships with users, just like teams and repositories. In this case, tenant-specific roles can be implemeneted as resource-specific roles. If tenancy is modeled differently, for example with a per-session tenant ID, then the tenant-specific roles section in the guide may be useful.
 
 ### Hierarchical roles
 

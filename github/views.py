@@ -101,7 +101,8 @@ def repos_index(request, org_name):
                 name=name, organization=Organization.objects.get(name=org_name)
             )
             repo.save()
-            # TODO: need to create the base roles every time a new repo is created
+            # Create the base roles for each repository created
+            # NOTE: better to do this lazily
             for (role_level, _) in RepositoryRoleLevel.choices:
                 role = RepositoryRole(name=role_level, repository=repo)
                 role.save()
@@ -185,20 +186,20 @@ def repo_roles_index(request, org_name, repo_name):
             repository__name=repo_name, name=new_role_name
         )
         try:
+            # Update the user's role
             username = request.POST.get("username")
             user = User.objects.get(username=username)
 
-            # TODO: improve updating roles with library support
             old_role = RepositoryRole.objects.get(
                 repository__name=repo_name, users=user
             )
             user.repositoryrole_set.remove(old_role)
             user.repositoryrole_set.add(new_role)
         except:
+            # Update the team's role
             teamname = request.POST.get("teamname")
             team = Team.objects.get(name=teamname)
 
-            # TODO: improve updating roles with library support
             old_role = RepositoryRole.objects.get(
                 repository__name=repo_name, teams=team
             )

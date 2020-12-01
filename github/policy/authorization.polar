@@ -141,7 +141,7 @@ role_allow(role: github::RepositoryRole{name: "Read"}, "read", repo: github::Rep
 role_allow(role: github::RepositoryRole{name: "Read"}, "read", issue: github::Issue) if
     role.repository.id = issue.repository.id;
 
-### TODO: (clean up) Hack around organization base roles (ignoring the role basically makes this a normal allow rule)
+### Organization "Read" base roles
 role_allow(role: github::OrganizationRole{name: "Member"}, "read", repo: github::Repository) if
     role.organization = repo.organization and
     repo.organization.base_role = "Read";
@@ -151,6 +151,11 @@ role_allow(role: github::RepositoryRole{name: "Admin"}, _action, request: HttpRe
     request.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, "roles", ""] and
     role.repository.name = repo_name;
 
+### Organization owners can access the "Roles" repo page for all repos in the org
+role_allow(role: github::OrganizationRole{name: "Owner"}, _action, request: HttpRequest) if
+    request.path.split("/") matches ["", "orgs", org_name, "repos", _repo_name, "roles", ""] and
+    role.organization.name = org_name;
+
 ### Repo Admins can take any action on their repositories
 role_allow(role: github::RepositoryRole{name: "Admin"}, _action, repo: github::Repository) if
     role.repository.id = repo.id;
@@ -159,10 +164,6 @@ role_allow(role: github::RepositoryRole{name: "Admin"}, _action, repo: github::R
 role_allow(role: github::OrganizationRole{name: "Owner"}, _action, repo: github::Repository) if
     role.organization.id = repo.organization.id;
 
-### TODO: would like to have all organization owners get admin role on all repos, but can't do that easily now
-role_allow(role: github::OrganizationRole{name: "Owner"}, _action, request: HttpRequest) if
-    request.path.split("/") matches ["", "orgs", org_name, "repos", _repo_name, "roles", ""] and
-    role.organization.name = org_name;
 
 ## Team Permissions
 
