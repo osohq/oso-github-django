@@ -101,7 +101,7 @@ This application exemplifies several of the patterns from that guide, which we'l
 
 ### Resource-specific roles
 
-All of the roles in this app are (resource-specific roles)[https://docs.osohq.com/getting-started/rbac.html#resource-specific-roles]. Resource-specific roles are roles that apply to one type of resource.
+All of the roles in this app are [resource-specific roles](https://docs.osohq.com/getting-started/rbac.html#resource-specific-roles). Resource-specific roles are roles that apply to one type of resource.
 In this app, we have represented these roles as Django models that correspond to tables in the database.
 
 Each role model has the following characteristics:
@@ -129,7 +129,7 @@ The three types of resource-specific roles in the app are:
 
 ### Hierarchical roles
 
-All of the roles in the app have some hierarchical element to them. [Hierarchical roles]() inherit permissions from one another based on their position in the hierarchy. In the GitHub example, the following hierarchies apply:
+All of the roles in the app have some hierarchical element to them. [Hierarchical roles](https://docs.osohq.com/getting-started/rbac.html#role-hierarchies) inherit permissions from one another based on their position in the hierarchy. In the GitHub example, the following hierarchies apply:
 
 Organization roles:
 
@@ -164,6 +164,28 @@ This is implemented in the oso policy(`github/policy/authorization.polar`) with 
 
 The implementation in this policy is different from that shown in the roles guide, which demonstrates two other alternative implementations [here](https://docs.osohq.com/getting-started/rbac.html#resource-hierarchies-nested-resources).
 
-```
+## Demo Users
+
+The users configured from the fixture data are:
 
 ```
+username: admin
+password: ilikecats
+
+username: john
+password: strawberryfields
+
+username: paul
+password: strawberryfields
+
+username: ringo
+password: beatles123
+
+username: mike
+password: monsters123
+
+username: sully
+password: monsters123
+```
+
+where `admin` is the django superuser.
