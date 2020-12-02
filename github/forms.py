@@ -1,6 +1,5 @@
 from django.forms import Form, CharField, ChoiceField
-from django.db.models import Q
-from .models import RepositoryRole, User, Repository, RepositoryRoleLevel
+from .models import RepositoryRoleLevel
 
 # Create the form class.
 class RepositoryRoleForm(Form):
