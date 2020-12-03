@@ -1,5 +1,6 @@
-{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "Roles" %}
-{% endblock %} {% block content %}
+{% extends "base.html" %} {% load i18n %}
+{% block title %}{% trans "Roles" %} {% endblock %}
+{% block content %}
 
 <h1>
   <a href="{% url 'repos_index' org_name %}">{{ org_name }}</a> /
@@ -11,10 +12,7 @@
 
   <ul class="list-group">
     {% for user_form in user_forms %}
-    <form
-      action="{% url 'repo_roles_index' org_name repo_name %}"
-      method="post"
-    >
+    <form action="{% url 'repo_roles_index' org_name repo_name %}" method="post">
       {% csrf_token %} {{ user_form.1 }}
       <input type="hidden" name="username" value="{{ user_form.0 }}" />
       <input type="submit" value="Submit" />
@@ -25,10 +23,7 @@
   <h2>Teams</h2>
   <ul class="list-group">
     {% for team_form in team_forms %}
-    <form
-      action="{% url 'repo_roles_index' org_name repo_name %}"
-      method="post"
-    >
+    <form action="{% url 'repo_roles_index' org_name repo_name %}" method="post">
       {% csrf_token %} {{ team_form.1 }}
       <input type="hidden" name="teamname" value="{{ team_form.0 }}" />
       <input type="submit" value="Submit" />

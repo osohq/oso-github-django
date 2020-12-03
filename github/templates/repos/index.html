@@ -1,9 +1,10 @@
-{% extends "orgs/show.html" %} {% load i18n %} {% block title %}{% trans
-"Repositories" %}{% endblock %} {% block org_content %}
+{% extends "orgs/show.html" %}
+{% load i18n %}
+{% block title %}{% trans "Repositories" %}{% endblock %}
+{% block org_content %}
 
 <div class="col-md-6">
-  <a href="{% url 'repos_new' org_name %}"
-    ><button class="btn btn-primary float-right" style="margin: 10px">
+  <a href="{% url 'repos_new' org_name %}"><button class="btn btn-primary float-right" style="margin: 10px">
       New Repository
     </button>
   </a>
@@ -13,10 +14,7 @@
   {% if repo_list %}
   <ul class="list-group">
     {% for repo in repo_list %}
-    <a
-      href="{% url 'repos_show' org_name repo.name %}"
-      class="list-group-item list-group-item-action"
-    >
+    <a href="{% url 'repos_show' org_name repo.name %}" class="list-group-item list-group-item-action">
       <b> {{ repo.name }} </b>
     </a>
     {% endfor %}

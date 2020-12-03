@@ -1,9 +1,9 @@
-{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "View Team"
-%}{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "View Team" %}{% endblock %}
+{% block content %}
 <h1>
-  <a href="{% url 'repos_index' team.organization %}"
-    >{{ team.organization }}</a
-  >
+  <a href="{% url 'repos_index' team.organization %}">{{ team.organization }}</a>
   / {{ team.name }} Team
 </h1>
 <br />

@@ -1,5 +1,7 @@
-{% extends "base.html" %} {% load i18n %} {% block title %}{% trans "View
-Repository" %}{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "View Repository" %}{% endblock %}
+{% block content %}
 <h1>
   <a href="{% url 'repos_index' org_name %}">{{ repo.organization }}</a>
   / {{ repo.name }}
@@ -16,7 +18,8 @@ Repository" %}{% endblock %} {% block content %}
 <div>
   <a href="{% url 'issues_index' org_name repo.name %}">
     <h4 class="text-primary">
-      <b><pre>View Issues</pre></b>
+      <b>
+        <pre>View Issues</pre></b>
     </h4>
   </a>
 </div>
@@ -26,7 +29,8 @@ Repository" %}{% endblock %} {% block content %}
 <div>
   <a href="{% url 'repo_roles_index' org_name repo.name %}">
     <h4 class="text-primary">
-      <b><pre>Manage Access</pre></b>
+      <b>
+        <pre>Manage Access</pre></b>
     </h4>
   </a>
 </div>
