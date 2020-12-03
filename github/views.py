@@ -39,6 +39,7 @@ def orgs_index(request):
         context = {"org_list": orgs}
         return render(request, "orgs/index.html", context)
 
+
 @authorize_request
 def org_people_index(request, org_name):
     if request.method == "GET":
@@ -206,6 +207,7 @@ def teams_index(request, org_name):
         context = {"org_name": org_name, "team_list": teams}
         return render(request, "teams/index.html", context)
 
+
 def teams_show(request, org_name, team_name):
     team = get_object_or_404(Team, organization__name=org_name, name=team_name)
     context = {
@@ -233,6 +235,7 @@ def issues_index(request, org_name, repo_name):
         except:
             context = {"org_name": org_name, "repo_name": repo_name, "issue_list": []}
         return render(request, "issues/index.html", context)
+
 
 # CONTEXT PROCESSORS
 
