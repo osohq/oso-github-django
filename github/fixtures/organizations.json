@@ -3,14 +3,16 @@
     "model": "github.organization",
     "pk": 1,
     "fields": {
-        "name": "The Beatles"
+        "name": "The Beatles",
+        "base_role": "Read"
     }
 },
 {
     "model": "github.organization",
     "pk": 2,
     "fields": {
-        "name": "Monsters Inc."
+        "name": "Monsters Inc.",
+        "base_role": "Read"
     }
 }
 ]
