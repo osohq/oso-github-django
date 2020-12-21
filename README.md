@@ -46,8 +46,9 @@ Model hierarchy:
     |   |             |
     +---+---+    Repositories ---> RepositoryRoles: - Admin
     |       |         |                             - Maintain
-
-Users Teams Issues - Write - Triage - Read
+  Users   Teams     Issues                          - Write
+                                                    - Triage
+                                                    - Read
 
 ```
 
