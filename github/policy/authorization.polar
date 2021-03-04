@@ -48,6 +48,7 @@ resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
 ### Repo roles apply to HttpRequests with paths starting /orgs/<org_name>/repos/<repo_name>/
 resource_role_applies_to(requested_resource: HttpRequest, role_resource) if
     requested_resource.path.split("/") matches ["", "orgs", _org_name, "repos", repo_name, *_rest] and
+    repo_name != "" and
     role_resource = github::Repository.objects.get(name: repo_name);
 
 
